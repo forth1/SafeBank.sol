@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// @title 一个最简单的可复用 Ownable 合约
+/// @title 简单拥有者合约
 contract OwnableSimple {
     address public owner;
 
+    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
+
     constructor() {
         owner = msg.sender;
+        emit OwnershipTransferred(address(0), owner);
     }
 
     modifier onlyOwner() {
@@ -15,29 +18,27 @@ contract OwnableSimple {
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "zero");
+        require(newOwner != address(0), "zero addr");
+        emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
     }
 }
 
-/// @title 使用继承的银行合约
-/// SafeBankV2 自动拥有 OwnableSimple 里的 owner / onlyOwner / transferOwnership
-contract SafeBankV2 is OwnableSimple {
+/// @title 带余额的安全银行
+contract SafeBankV2 {
     mapping(address => uint256) public balances;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
 
-    // 存款，所有人都可以存
+    // 存款（任何人都可以调用）
     function deposit() external payable {
         require(msg.value > 0, "amount = 0");
-
         balances[msg.sender] += msg.value;
-
         emit Deposit(msg.sender, msg.value);
     }
 
-    // 取款，只能本人取自己的钱
+    // 取款（取自己存的钱）
     function withdraw(uint256 amount) external {
         require(amount > 0, "amount = 0");
         require(balances[msg.sender] >= amount, "balance not enough");
@@ -50,7 +51,21 @@ contract SafeBankV2 is OwnableSimple {
         emit Withdraw(msg.sender, amount);
     }
 
-    // 只有 owner 可以把合约里的余额提走（比如项目关闭时清算）
+    // 查询自己余额
+    function getMyBalance() external view returns (uint256) {
+        return balances[msg.sender];
+    }
+
+    // 查询合约里总 ETH
+    function getBankTotal() external view returns (uint256) {
+        return address(this).balance;
+    }
+}
+
+/// @title 继承 Ownable + SafeBankV2 的版本
+/// @notice 多了 onlyOwner 的紧急提款功能
+contract SafeBankV2_Inherit is SafeBankV2, OwnableSimple {
+    // 只有 owner 可以把合约所有 ETH 提出来（项目紧急关停用）
     function emergencyWithdrawAll() external onlyOwner {
         uint256 bal = address(this).balance;
         require(bal > 0, "no ETH");
