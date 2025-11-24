@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event Listener Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:Arial; padding:20px;">
+
+<h2>Event Listener Demo</h2>
+
+<button id="connect">连接钱包</button>
+
+<p>当前账号：<span id="addr">未连接</span></p >
+
+<hr>
+
+<script>
+const CONTRACT_ADDRESS = "【你的 EventDemo 合约地址放这里】";
+
+const ABI = [
+  "event MessageChanged(address indexed user, string oldMsg, string newMsg)",
+  "function setMessage(string _msg) external",
+  "function message() view returns (string)"
+];
+
+let provider, signer, contract;
+
+document.getElementById("connect").onclick = async () => {
+  provider = new ethers.BrowserProvider(window.ethereum);
+  signer = await provider.getSigner();
+  const addr = await signer.getAddress();
+  document.getElementById("addr").textContent = addr;
+
+  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+  // 监听事件（重点）
+  contract.on("MessageChanged", (user, oldMsg, newMsg) => {
+    console.log("📢 事件触发！");
+    console.log("用户：", user);
+    console.log("旧消息：", oldMsg);
+    console.log("新消息：", newMsg);
+    alert(`事件触发：${newMsg}`);
+  });
+
+  alert("已连接并开始监听事件！");
+}
+</script>
+
+</body>
+</html>
