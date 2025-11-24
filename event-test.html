@@ -19,111 +19,75 @@
 const CONTRACT_ADDRESS = "0xCFFE24918BB30638D135C326c78Ab217A59d565c";
 
 const ABI = [
-	{
-		"inputs": [],
-		"name": "deposit",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Deposit",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "withdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Withdraw",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "balances",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
+    {
+        "inputs": [],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {"indexed": true, "internalType": "address", "name": "user", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+        ],
+        "name": "Deposit",
+        "type": "event"
+    },
+    {
+        "inputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
+        "name": "withdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {"indexed": true, "internalType": "address", "name": "user", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+        ],
+        "name": "Withdraw",
+        "type": "event"
+    },
+    {
+        "inputs":[{"internalType":"address","name":"","type":"address"}],
+        "name":"balances",
+        "outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
+        "stateMutability":"view",
+        "type":"function"
+    }
 ];
 
 let provider, signer, contract;
 
 document.getElementById("connect").onclick = async () => {
-  provider = new ethers.BrowserProvider(window.ethereum);
-  signer = await provider.getSigner();
-  const addr = await signer.getAddress();
-  document.getElementById("addr").textContent = addr;
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    const addr = await signer.getAddress();
+    document.getElementById("addr").textContent = addr;
 
-  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-  //  // 监听存款事件
-  contract.on("Deposit", (user, amount) => {
-    console.log("📥 Deposit 事件触发");
-    console.log("用户：", user);
-    console.log("金额：", amount.toString());
-    alert(`存款事件：${user} 存入了 ${amount.toString()} wei`);
-  });
+    alert("钱包已连接，事件监听已启动！");
 
-  // 监听取款事件（可选）
-  contract.on("Withdraw", (user, amount) => {
-    console.log("📤 Withdraw 事件触发");
-    console.log("用户：", user);
-    console.log("金额：", amount.toString());
-    alert(`取款事件：${user} 取出了 ${amount.toString()} wei`);
-    alert("✅ 钱包已连接，事件监听已启动！"); 
-  });
+    // ------- 监听存款事件 -------
+    contract.on("Deposit", (user, amount) => {
+        console.log("📥 Deposit 事件触发");
+        console.log("用户：", user);
+        console.log("金额：", amount.toString());
+        alert(`💰 存款事件：${user} 存入 ${amount.toString()} wei`);
+    });
+
+    // ------- 监听取款事件 -------
+    contract.on("Withdraw", (user, amount) => {
+        console.log("📤 Withdraw 事件触发");
+        console.log("用户：", user);
+        console.log("金额：", amount.toString());
+        alert(`🏧 取款事件：${user} 取出 ${amount.toString()} wei`);
+    });
+};
 </script>
 
 </body>
